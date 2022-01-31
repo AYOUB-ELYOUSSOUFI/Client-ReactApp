@@ -1,8 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from '../assets/logo.png';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
+    const [data, setData] = useState({
+        username: "",
+        email: "",
+        password: ""
+    });
+
+    const [error,setError] = useState("");
+    const navigate = useNavigate();
+
+    const handelChange = ({ currentTarget: input }) => {
+        setData({ ...data, [input.name]: input.value });
+    }
+
+    const handelSubmit = (e) => {
+        e.preventDefault();
+        try {
+            const url = `${process.env.REACT_APP_BASE_URL}/api/auth/register`;
+            axios.post(url,data)
+                 .then(res => {
+                    console.log(res);
+                });
+            navigate("/login");
+        } catch (error) {
+            if (
+				error.response &&
+				error.response.status >= 400 &&
+				error.response.status <= 500
+			) {
+				setError(error.response.data.message);
+			}
+        }
+    }
     return (
         <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full px-4 py-4 space-y-8 bg-white rounded">
@@ -14,7 +47,7 @@ const Register = () => {
                     />
                     <h2 className="mt-3 text-center text-3xl font-extrabold text-gray-900">Register</h2>
                 </div>
-                <form className="mt-3 space-y-6">
+                <form className="mt-3 space-y-6" onSubmit={handelSubmit}>
                     <input type="hidden" name="remember" defaultValue="true" />
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
@@ -25,10 +58,12 @@ const Register = () => {
                                 id="Username"
                                 name="username"
                                 type="text"
-                                autoComplete="email"
+                                autoComplete="username"
+                                onChange={handelChange}
+                                value={data.username}
                                 required
                                 className="mt-2 mb-4 appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address"
+                                placeholder="username"
                             />
                         </div>
                         <div>
@@ -40,6 +75,8 @@ const Register = () => {
                                 name="email"
                                 type="email"
                                 autoComplete="email"
+                                onChange={handelChange}
+                                value={data.email}
                                 required
                                 className="mt-2 mb-4 appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                 placeholder="Email address"
@@ -54,13 +91,15 @@ const Register = () => {
                                 name="password"
                                 type="password"
                                 autoComplete="current-password"
+                                onChange={handelChange}
+                                value={data.password}
                                 required
                                 className="mt-2 appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                 placeholder="Password"
                             />
                         </div>
                     </div>
-
+                    {error && <div>{error}</div>}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center">
                             <input
@@ -74,7 +113,6 @@ const Register = () => {
                             </label>
                         </div>
                     </div>
-
                     <div>
                         <button
                             type="submit"

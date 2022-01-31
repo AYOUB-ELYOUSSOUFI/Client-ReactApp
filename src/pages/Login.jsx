@@ -1,10 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LockClosedIcon } from '@heroicons/react/solid';
 import logo from '../assets/logo.png';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 
 const Login = () => {
+    const [data, setData] = useState({
+        username: "",
+        password: ""
+    });
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+    const handelChange = ({ currentTarget: input }) => {
+        setData({ ...data, [input.name]: [input.value] });
+    };
+
+    const handelSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const url = "http://localhost:5000/api/auth/login";
+            // const { data: res } = await axios.post(url, data);
+            // localStorage.setItem("accessToken", res.data);
+            // navigate("/home");
+            await axios.post(url, data)
+                .then( res => {
+                    localStorage.setItem("accessToken", res.data.accessToken);
+                    console.log(res.data);
+                    navigate("/home");
+                })
+        } catch (error) {
+            if (
+                error.response &&
+                error.response.status >= 400 &&
+                error.response.status <= 500
+            ) {
+                setError(error.response.data.message);
+            }
+        }
+    }
     return (
         <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full px-4 py-4 space-y-8 bg-white rounded">
@@ -16,21 +50,23 @@ const Login = () => {
                     />
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in</h2>
                 </div>
-                <form className="mt-8 space-y-6">
+                <form className="mt-8 space-y-6" onSubmit={handelSubmit}>
                     <input type="hidden" name="remember" defaultValue="true" />
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
-                            <label htmlFor="email-address" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                                 Email address
                             </label>
                             <input
-                                id="email-address"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
+                                id="username"
+                                name="username"
+                                type="text"
+                                autoComplete="username"
+                                onChange={handelChange}
+                                value={data.email}
                                 required
                                 className="mt-2 mb-4 appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address"
+                                placeholder="username"
                             />
                         </div>
                         <div>
@@ -42,6 +78,8 @@ const Login = () => {
                                 name="password"
                                 type="password"
                                 autoComplete="current-password"
+                                onChange={handelChange}
+                                value={data.password}
                                 required
                                 className="mt-2 appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                 placeholder="Password"
@@ -68,17 +106,19 @@ const Login = () => {
                             </a>
                         </div>
                     </div>
-
+                    {error && <div>{error}</div>}
                     <div>
-                        <button
-                            type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                                <LockClosedIcon className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
-                            </span>
-                            Sign in
-                        </button>
+                        {/* <Link to="/home"> */}
+                            <button
+                                type="submit"
+                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                                    <LockClosedIcon className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
+                                </span>
+                                Sign in
+                            </button>
+                        {/* </Link> */}
                     </div>
                     <div className="mt-1 text-sm text-center">
                         Don't have an account?
